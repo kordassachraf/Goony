@@ -2,9 +2,12 @@ package com.example.ui.screens
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -20,9 +23,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -204,6 +210,10 @@ fun SettingsScreen(
                         transitionStyle = currentSettings.transitionStyle,
                         onTransitionStyleChange = {
                             viewModel.updateSettings(currentSettings.copy(transitionStyle = it))
+                        },
+                        actressNameColorHex = currentSettings.actressNameColorHex,
+                        onActressNameColorChange = {
+                            viewModel.updateSettings(currentSettings.copy(actressNameColorHex = it))
                         }
                     )
                 }
@@ -652,7 +662,9 @@ private fun SettingsDisplaySection(
     appIconStyle: Int,
     onAppIconStyleChange: (Int) -> Unit,
     transitionStyle: Int,
-    onTransitionStyleChange: (Int) -> Unit
+    onTransitionStyleChange: (Int) -> Unit,
+    actressNameColorHex: String = "#2F80ED",
+    onActressNameColorChange: (String) -> Unit = {}
 ) {
     val palette = LocalVaultPalette.current
     val accent = LocalAccentColor.current
@@ -682,6 +694,19 @@ private fun SettingsDisplaySection(
                 NativeThemeSelector(
                     selectedTheme = themeName,
                     onSelectTheme = onThemeChange
+                )
+            }
+        }
+
+        // Actress Name Color Picker (Spectrum Bar + Tone Switch Button)
+        Card(
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        ) {
+            Box(modifier = Modifier.padding(16.dp)) {
+                ActressColorSpectrumPicker(
+                    selectedColorHex = actressNameColorHex,
+                    onColorChange = onActressNameColorChange
                 )
             }
         }
@@ -958,6 +983,236 @@ private fun SettingsSampleDataSection(
                         color = Color(0xFF10B981)
                     )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ActressColorSpectrumPicker(
+    selectedColorHex: String,
+    onColorChange: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val palette = LocalVaultPalette.current
+    val accent = LocalAccentColor.current
+
+    val initialColor = remember(selectedColorHex) {
+        parseHexColor(selectedColorHex, Color(0xFF2F80ED))
+    }
+
+    var isShadeMode by remember { mutableStateOf(false) }
+
+    var baseHue by remember(selectedColorHex) {
+        val hsv = FloatArray(3)
+        android.graphics.Color.colorToHSV(
+            android.graphics.Color.argb(
+                (initialColor.alpha * 255).toInt(),
+                (initialColor.red * 255).toInt(),
+                (initialColor.green * 255).toInt(),
+                (initialColor.blue * 255).toInt()
+            ),
+            hsv
+        )
+        mutableFloatStateOf(hsv[0])
+    }
+
+    var shadeValue by remember(selectedColorHex) {
+        val hsv = FloatArray(3)
+        android.graphics.Color.colorToHSV(
+            android.graphics.Color.argb(
+                (initialColor.alpha * 255).toInt(),
+                (initialColor.red * 255).toInt(),
+                (initialColor.green * 255).toInt(),
+                (initialColor.blue * 255).toInt()
+            ),
+            hsv
+        )
+        mutableFloatStateOf(hsv[2].coerceIn(0.2f, 1.0f))
+    }
+
+    val currentDisplayColor = remember(baseHue, shadeValue, isShadeMode) {
+        if (!isShadeMode) {
+            Color.hsv(hue = baseHue, saturation = 0.85f, value = 0.95f)
+        } else {
+            Color.hsv(hue = baseHue, saturation = 0.85f, value = shadeValue)
+        }
+    }
+
+    val spectrumBrush = remember {
+        Brush.horizontalGradient(
+            listOf(
+                Color.Red,
+                Color.Yellow,
+                Color.Green,
+                Color.Cyan,
+                Color.Blue,
+                Color.Magenta,
+                Color.Red
+            )
+        )
+    }
+
+    val shadeBrush = remember(baseHue) {
+        val dark = Color.hsv(baseHue, 0.95f, 0.2f)
+        val mid = Color.hsv(baseHue, 0.85f, 0.6f)
+        val bright = Color.hsv(baseHue, 0.85f, 1.0f)
+        val soft = Color.hsv(baseHue, 0.35f, 1.0f)
+        Brush.horizontalGradient(listOf(dark, mid, bright, soft))
+    }
+
+    val updateFromRatio = remember(isShadeMode) {
+        { ratio: Float ->
+            val clampedRatio = ratio.coerceIn(0f, 1f)
+            if (!isShadeMode) {
+                baseHue = clampedRatio * 360f
+                val c = Color.hsv(baseHue, 0.85f, 0.95f)
+                val hex = String.format("#%02X%02X%02X", (c.red * 255).toInt(), (c.green * 255).toInt(), (c.blue * 255).toInt())
+                onColorChange(hex)
+            } else {
+                shadeValue = (0.2f + clampedRatio * 0.8f).coerceIn(0.2f, 1.0f)
+                val c = Color.hsv(baseHue, 0.85f, shadeValue)
+                val hex = String.format("#%02X%02X%02X", (c.red * 255).toInt(), (c.green * 255).toInt(), (c.blue * 255).toInt())
+                onColorChange(hex)
+            }
+        }
+    }
+
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                Text(
+                    text = "Actress Name Color",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.SemiBold
+                    ),
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = if (isShadeMode) "Shade / Tone Level" else "Color Spectrum",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            TextButton(
+                onClick = {
+                    onColorChange("#2F80ED")
+                },
+                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 2.dp),
+                modifier = Modifier.height(32.dp)
+            ) {
+                Text(
+                    text = "Reset",
+                    style = MaterialTheme.typography.labelLarge.copy(
+                        fontWeight = FontWeight.SemiBold
+                    ),
+                    color = accent
+                )
+            }
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            // Left color preview circle (unified size: 30.dp)
+            Box(
+                modifier = Modifier
+                    .size(30.dp)
+                    .clip(CircleShape)
+                    .background(currentDisplayColor)
+                    .border(
+                        width = 1.5.dp,
+                        color = Color.White.copy(alpha = 0.85f),
+                        shape = CircleShape
+                    )
+            )
+
+            // Center color spectrum / shade slider bar
+            BoxWithConstraints(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(28.dp)
+                    .pointerInput(isShadeMode) {
+                        detectTapGestures { offset ->
+                            val ratio = offset.x / size.width
+                            updateFromRatio(ratio)
+                        }
+                    }
+                    .pointerInput(isShadeMode) {
+                        detectHorizontalDragGestures(
+                            onDragStart = { offset ->
+                                val ratio = offset.x / size.width
+                                updateFromRatio(ratio)
+                            },
+                            onHorizontalDrag = { change, _ ->
+                                change.consume()
+                                val ratio = change.position.x / size.width
+                                updateFromRatio(ratio)
+                            }
+                        )
+                    },
+                contentAlignment = Alignment.CenterStart
+            ) {
+                val totalWidthPx = constraints.maxWidth.toFloat()
+                
+                // Track bar
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(10.dp)
+                        .clip(CircleShape)
+                        .background(if (isShadeMode) shadeBrush else spectrumBrush)
+                )
+
+                val thumbRatio = if (!isShadeMode) (baseHue / 360f).coerceIn(0f, 1f) else ((shadeValue - 0.2f) / 0.8f).coerceIn(0f, 1f)
+                val thumbRadiusDp = 9.dp
+                val thumbOffsetDp = with(LocalDensity.current) { (thumbRatio * totalWidthPx).toDp() }.coerceIn(thumbRadiusDp, with(LocalDensity.current) { totalWidthPx.toDp() } - thumbRadiusDp)
+
+                // Pure white circular thumb with solid black border
+                Box(
+                    modifier = Modifier
+                        .offset(x = thumbOffsetDp - thumbRadiusDp)
+                        .size(18.dp)
+                        .clip(CircleShape)
+                        .background(Color.White)
+                        .border(1.5.dp, Color.Black, CircleShape)
+                )
+            }
+
+            // Right mode toggle button (unified circle size: 30.dp)
+            Box(
+                modifier = Modifier
+                    .size(30.dp)
+                    .clip(CircleShape)
+                    .background(
+                        if (isShadeMode) accent.copy(alpha = 0.25f)
+                        else MaterialTheme.colorScheme.surfaceVariant
+                    )
+                    .border(
+                        width = 1.2.dp,
+                        color = if (isShadeMode) accent else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
+                        shape = CircleShape
+                    )
+                    .clickable { isShadeMode = !isShadeMode },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = if (isShadeMode) Icons.Default.Palette else Icons.Default.Tune,
+                    contentDescription = if (isShadeMode) "Color Spectrum" else "Shade Level",
+                    tint = if (isShadeMode) accent else MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(17.dp)
+                )
             }
         }
     }

@@ -73,6 +73,7 @@ data class SettingsEntity(
     val betaTestPrivacy: Boolean = false,
     val defaultAspectRatio: String = "16:9",
     val showManagementCards: Boolean = true,
+    val actressNameColorHex: String = "#2F80ED",
     val appIconStyle: Int = 4, // Inverted default
     val transitionStyle: Int = 1, // Fade-Through Slide default
     val lastSyncTime: Long = 0L

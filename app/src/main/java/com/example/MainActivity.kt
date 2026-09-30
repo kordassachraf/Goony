@@ -66,6 +66,7 @@ class MainActivity : ComponentActivity() {
             GVJVaultTheme(
                 paletteName = safeSettings.currentTheme,
                 accentColorHex = safeSettings.accentColorHex,
+                actressNameColorHex = safeSettings.actressNameColorHex,
                 betaTestPrivacy = safeSettings.betaTestPrivacy
             ) {
                 Surface(modifier = Modifier.fillMaxSize()) {

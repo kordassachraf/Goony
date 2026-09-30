@@ -53,12 +53,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
 import coil.compose.AsyncImage
+import androidx.compose.ui.res.painterResource
+import com.example.R
 import coil.request.ImageRequest
 import com.example.data.local.entity.ActorEntity
 import com.example.data.local.entity.LinkEntity
 import com.example.data.local.entity.StudioEntity
 import com.example.ui.ActiveInlineVideoPlayback
 import com.example.ui.theme.LocalAccentColor
+import com.example.ui.theme.LocalActressNameColor
 import com.example.ui.theme.LocalBetaTestPrivacy
 import com.example.ui.theme.LocalVaultPalette
 import com.example.ui.theme.privacyImageBlur
@@ -455,6 +458,8 @@ fun LinkCard(
 
                                 CardActionMenuState.MAIN_MENU -> {
                         MainActionMenu(
+                            hasMagnet = hasAnyMagnet,
+                            hasUrl = hasAnyUrl,
                             onMagnetClick = {
                                 selectedSource = Source.MAGNET
                                 subMenuState = CardActionMenuState.QUALITY_MENU
@@ -737,7 +742,7 @@ fun LinkCard(
                                         fontWeight = FontWeight.Bold,
                                         letterSpacing = 0.15.sp
                                     ),
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    color = LocalActressNameColor.current,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
                                     modifier = Modifier
@@ -766,7 +771,7 @@ fun LinkCard(
                                         contentAlignment = Alignment.Center
                                     ) {
                                         Icon(
-                                            imageVector = Icons.Default.Person,
+                                            painter = painterResource(R.drawable.ic_actors_group),
                                             contentDescription = "More Actors",
                                             tint = accent,
                                             modifier = Modifier.size(18.dp)

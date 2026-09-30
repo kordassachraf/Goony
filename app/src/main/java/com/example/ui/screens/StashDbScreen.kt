@@ -32,6 +32,8 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Videocam
+import androidx.compose.ui.res.painterResource
+import com.example.R
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -60,9 +62,11 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
@@ -108,6 +112,7 @@ fun StashDbScreen(
 ) {
     val palette = LocalVaultPalette.current
     val accent = LocalAccentColor.current
+    val haptic = LocalHapticFeedback.current
     val coroutineScope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
     val focusRequester = remember { FocusRequester() }
@@ -292,6 +297,7 @@ fun StashDbScreen(
                         actions = {
                             TextButton(
                                 onClick = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                     val unsavedIds = scenesList
                                         .filter { scene ->
                                             val isSaved = (scene.id in savedStashDbIds) || (scene.title.trim().lowercase() in savedTitles)
@@ -308,7 +314,10 @@ fun StashDbScreen(
                                 )
                             }
                             IconButton(
-                                onClick = { saveSelectedScenes() },
+                                onClick = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    saveSelectedScenes()
+                                },
                                 modifier = Modifier.testTag("save_selected_scenes_button")
                             ) {
                                 Icon(
@@ -649,7 +658,10 @@ fun StashDbScreen(
                                                 role = Role.Tab,
                                                 interactionSource = actorsInteractionSource,
                                                 indication = null,
-                                                onClick = { viewModel.setStashActiveType(StashSearchType.ACTORS, settings.stashDbApiKey) }
+                                                 onClick = {
+                                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                                    viewModel.setStashActiveType(StashSearchType.ACTORS, settings.stashDbApiKey)
+                                                }
                                             ),
                                         contentAlignment = Alignment.Center
                                     ) {
@@ -685,7 +697,10 @@ fun StashDbScreen(
                                                 role = Role.Tab,
                                                 interactionSource = studioInteractionSource,
                                                 indication = null,
-                                                onClick = { viewModel.setStashActiveType(StashSearchType.STUDIO, settings.stashDbApiKey) }
+                                                onClick = {
+                                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                                    viewModel.setStashActiveType(StashSearchType.STUDIO, settings.stashDbApiKey)
+                                                }
                                             ),
                                         contentAlignment = Alignment.Center
                                     ) {
@@ -797,7 +812,10 @@ fun StashDbScreen(
                                     HorizontalActorCircleItem(
                                         performer = performer,
                                         isSelected = isSelected,
-                                        onClick = { viewModel.selectStashPerformer(performer, settings.stashDbApiKey) }
+                                        onClick = {
+                                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                            viewModel.selectStashPerformer(performer, settings.stashDbApiKey)
+                                        }
                                     )
                                 }
                             }
@@ -825,7 +843,10 @@ fun StashDbScreen(
                                     HorizontalStudioCircleItem(
                                         studio = studio,
                                         isSelected = isSelected,
-                                        onClick = { viewModel.selectStashStudio(studio, settings.stashDbApiKey) }
+                                        onClick = {
+                                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                            viewModel.selectStashStudio(studio, settings.stashDbApiKey)
+                                        }
                                     )
                                 }
                             }
@@ -1161,6 +1182,7 @@ fun StashGridPhotoCard(
 ) {
     val palette = LocalVaultPalette.current
     val accent = LocalAccentColor.current
+    val haptic = LocalHapticFeedback.current
     val context = LocalContext.current
     val density = LocalDensity.current
     val shimmerBrush = ShimmerBrush()
@@ -1235,7 +1257,10 @@ fun StashGridPhotoCard(
                 role = Role.Checkbox,
                 interactionSource = cardInteractionSource,
                 indication = null,
-                onValueChange = { onToggleSelect() }
+                onValueChange = {
+                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    onToggleSelect()
+                }
             )
             .semantics {
                 stateDescription = stateDesc
@@ -1296,36 +1321,6 @@ fun StashGridPhotoCard(
                             .fillMaxSize()
                             .background(Color.Black.copy(alpha = overlayAlpha))
                     )
-                }
-
-                // Small "Saved" pill badge at top-start for already saved scenes
-                if (isAlreadySaved) {
-                    Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        color = Color.Black.copy(alpha = 0.68f),
-                        modifier = Modifier
-                            .align(Alignment.TopStart)
-                            .padding(8.dp)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Check,
-                                contentDescription = "Already saved",
-                                tint = Color.White,
-                                modifier = Modifier.size(12.dp)
-                            )
-                            Text(
-                                text = "Saved",
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = Color.White
-                            )
-                        }
-                    }
                 }
 
                 // Circular Check badge in top right for selected scenes (smooth, fast & light)
@@ -1454,7 +1449,7 @@ fun StashGridPhotoCard(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Icon(
-                        imageVector = Icons.Outlined.Person,
+                        painter = painterResource(R.drawable.ic_actor_avatar),
                         contentDescription = null,
                         tint = palette.textSecondary,
                         modifier = Modifier.size(13.dp)
@@ -1476,7 +1471,7 @@ fun StashGridPhotoCard(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Icon(
-                        imageVector = Icons.Outlined.Videocam,
+                        painter = painterResource(R.drawable.ic_video_camera),
                         contentDescription = null,
                         tint = palette.textSecondary,
                         modifier = Modifier.size(13.5.dp)
@@ -1573,12 +1568,6 @@ fun EmptyStateView(
  */
 @Composable
 private fun StudioFallbackEmblem(name: String, accentColor: Color) {
-    val initials = name.trim().split(" ", "-", "_")
-        .take(2)
-        .mapNotNull { it.firstOrNull()?.uppercaseChar() }
-        .joinToString("")
-        .ifBlank { "S" }
-
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
@@ -1589,12 +1578,11 @@ private fun StudioFallbackEmblem(name: String, accentColor: Color) {
                 )
             )
     ) {
-        Text(
-            text = initials,
-            fontSize = 15.sp,
-            fontWeight = FontWeight.ExtraBold,
-            color = Color.White,
-            letterSpacing = 0.5.sp
+        Icon(
+            painter = painterResource(R.drawable.ic_video_camera),
+            contentDescription = name,
+            tint = Color.White.copy(alpha = 0.85f),
+            modifier = Modifier.size(22.dp)
         )
     }
 }

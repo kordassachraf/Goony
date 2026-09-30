@@ -1,50 +1,37 @@
 package com.example.ui.components
 
-import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import kotlin.math.min
+import androidx.compose.ui.res.painterResource
+import com.example.R
 
 /**
- * Custom full-container Avatar Placeholder matching the user's uploaded avatar image.
- * Features a dark grey background with a solid dark silhouette consisting of a
- * centered head circle and a wide shoulder dome stretching across the bottom ("full screen mode").
+ * Custom full-container Avatar Placeholder.
+ * Renders the exact Heroicons outlined User icon inside a sleek dark themed background.
  */
 @Composable
 fun ActorAvatarPlaceholder(
     modifier: Modifier = Modifier,
-    backgroundColor: Color = Color(0xFF3F3F3F),
-    silhouetteColor: Color = Color(0xFF121212)
+    backgroundColor: Color = Color(0xFF1E1E22),
+    iconColor: Color = Color.White.copy(alpha = 0.65f)
 ) {
-    Canvas(modifier = modifier.fillMaxSize()) {
-        val w = size.width
-        val h = size.height
-        val minDim = min(w, h)
-
-        if (minDim <= 0f) return@Canvas
-
-        // 1. Fill solid dark grey background
-        drawRect(color = backgroundColor)
-
-        // 2. Head circle
-        val headRadius = minDim * 0.21f
-        val headCenter = Offset(x = w / 2f, y = h * 0.38f)
-        drawCircle(
-            color = silhouetteColor,
-            radius = headRadius,
-            center = headCenter
-        )
-
-        // 3. Wide Shoulder Dome (full-screen arch spanning bottom width)
-        val shoulderRadius = minDim * 0.46f
-        val shoulderCenter = Offset(x = w / 2f, y = h * 1.05f)
-        drawCircle(
-            color = silhouetteColor,
-            radius = shoulderRadius,
-            center = shoulderCenter
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(backgroundColor),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.ic_actor_placeholder),
+            contentDescription = null,
+            tint = iconColor,
+            modifier = Modifier.fillMaxSize(0.60f) // increased to 60% of circle size for perfect prominence
         )
     }
 }

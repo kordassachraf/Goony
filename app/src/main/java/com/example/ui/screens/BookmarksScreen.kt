@@ -31,6 +31,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.res.painterResource
+import com.example.R
 import com.example.data.local.entity.LinkEntity
 import com.example.ui.MainViewModel
 import com.example.ui.ScreenState
@@ -242,7 +244,7 @@ fun BookmarksScreen(
                                 modifier = Modifier.testTag("sort_action_button")
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.SwapVert,
+                                    painter = painterResource(R.drawable.ic_funnel_solid),
                                     contentDescription = "Sort Mode"
                                 )
                             }

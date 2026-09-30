@@ -52,6 +52,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlin.math.roundToInt
 import coil.compose.AsyncImage
+import androidx.compose.ui.res.painterResource
+import com.example.R
 import com.example.data.local.entity.ActorEntity
 import com.example.data.local.entity.LinkEntity
 import com.example.data.local.entity.StudioEntity
@@ -62,6 +64,7 @@ import com.example.ui.components.ActorAvatarPlaceholder
 import com.example.ui.components.LinkCard
 import com.example.ui.theme.LocalAccentColor
 import com.example.ui.theme.LocalBetaTestPrivacy
+import com.example.ui.theme.LocalVaultPalette
 import com.example.ui.theme.privacyImageBlur
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -312,7 +315,7 @@ fun HomeScreen(
                                 modifier = Modifier.testTag("sort_action_button")
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.SwapVert,
+                                    painter = painterResource(R.drawable.ic_funnel_solid),
                                     contentDescription = "Sort Mode"
                                 )
                             }
@@ -1088,7 +1091,7 @@ fun HomeScreen(
                                 )
                             } else {
                                 Icon(
-                                    imageVector = Icons.Default.Videocam,
+                                    painter = painterResource(R.drawable.ic_video_camera),
                                     contentDescription = null,
                                     tint = if (colorProgress > 0.5f) Color.Black else Color.White,
                                     modifier = Modifier.size(60.dp)
@@ -1387,6 +1390,7 @@ private fun EntityScenesHeader(
 ) {
     val accent = LocalAccentColor.current
     val isBetaTest = LocalBetaTestPrivacy.current
+    val palette = LocalVaultPalette.current
 
     Row(
         modifier = Modifier
@@ -1395,58 +1399,76 @@ private fun EntityScenesHeader(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Circle Photo / Logo Display
-        val bgColor = if (!logoBgColor.isNullOrEmpty()) {
-            try {
-                Color(android.graphics.Color.parseColor(logoBgColor))
-            } catch (e: Exception) {
-                MaterialTheme.colorScheme.surfaceVariant
-            }
+        // Circle Photo / Logo Display matching management style exactly
+        val bgColor = if (isActor) {
+            palette.surface
         } else {
-            MaterialTheme.colorScheme.surfaceVariant
+            if (!logoBgColor.isNullOrEmpty()) {
+                try {
+                    Color(android.graphics.Color.parseColor(logoBgColor))
+                } catch (e: Exception) {
+                    palette.surface
+                }
+            } else {
+                palette.surface
+            }
         }
 
-        Box(
+        val borderStroke = if (isActor) {
+            BorderStroke(2.dp, accent.copy(alpha = 0.6f))
+        } else {
+            BorderStroke(2.dp, accent.copy(alpha = 0.5f))
+        }
+
+        val sizeDp = if (isActor) 72.dp else 70.dp
+
+        Surface(
+            shape = CircleShape,
+            color = bgColor,
+            shadowElevation = 3.dp,
             modifier = Modifier
-                .size(74.dp)
+                .size(sizeDp)
                 .clip(CircleShape)
-                .background(bgColor)
-                .border(2.dp, accent.copy(alpha = 0.7f), CircleShape),
-            contentAlignment = Alignment.Center
+                .border(borderStroke, CircleShape)
         ) {
-            if (!imageUrl.isNullOrBlank()) {
-                AsyncImage(
-                    model = imageUrl,
-                    contentDescription = name,
-                    contentScale = if (isActor) ContentScale.Crop else ContentScale.Fit,
-                    alignment = if (isActor) {
-                        BiasAlignment(
-                            horizontalBias = (imagePositionX - 50f) / 50f,
-                            verticalBias = (imagePositionY - 50f) / 50f
-                        )
-                    } else Alignment.Center,
-                    modifier = Modifier
-                        .fillMaxSize(if (isActor) 1f else 0.8f)
-                        .clip(CircleShape)
-                        .privacyImageBlur(isBetaTest)
-                        .graphicsLayer {
-                            if (isActor) {
-                                scaleX = imageZoom
-                                scaleY = imageZoom
-                                translationX = (imagePositionX - 50f) * (imageZoom - 1.0f) * (size.width / 100f)
-                                translationY = (imagePositionY - 50f) * (imageZoom - 1.0f) * (size.height / 100f)
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                if (!imageUrl.isNullOrBlank()) {
+                    AsyncImage(
+                        model = imageUrl,
+                        contentDescription = name,
+                        contentScale = if (isActor) ContentScale.Crop else ContentScale.Fit,
+                        alignment = if (isActor) {
+                            BiasAlignment(
+                                horizontalBias = (imagePositionX - 50f) / 50f,
+                                verticalBias = (imagePositionY - 50f) / 50f
+                            )
+                        } else Alignment.Center,
+                        modifier = Modifier
+                            .fillMaxSize(if (isActor) 1f else 0.8f)
+                            .clip(CircleShape)
+                            .privacyImageBlur(isBetaTest)
+                            .graphicsLayer {
+                                if (isActor) {
+                                    scaleX = imageZoom
+                                    scaleY = imageZoom
+                                    translationX = (imagePositionX - 50f) * (imageZoom - 1.0f) * (size.width / 100f)
+                                    translationY = (imagePositionY - 50f) * (imageZoom - 1.0f) * (size.height / 100f)
+                                }
                             }
-                        }
-                )
-            } else if (isActor) {
-                ActorAvatarPlaceholder()
-            } else {
-                Icon(
-                    imageVector = Icons.Default.Videocam,
-                    contentDescription = null,
-                    tint = accent,
-                    modifier = Modifier.size(36.dp)
-                )
+                    )
+                } else if (isActor) {
+                    ActorAvatarPlaceholder()
+                } else {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_video_camera),
+                        contentDescription = null,
+                        tint = palette.textMuted,
+                        modifier = Modifier.size(36.dp)
+                    )
+                }
             }
         }
 

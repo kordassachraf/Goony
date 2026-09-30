@@ -31,6 +31,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.res.painterResource
+import com.example.R
 import coil.compose.AsyncImage
 import com.example.data.local.entity.ActorEntity
 import com.example.ui.MainViewModel
@@ -77,6 +79,12 @@ fun ActorManagementScreen(
         }
     }
 
+    val prominentCardBg = when (palette.name.lowercase()) {
+        "amoled" -> Color(0xFF1E1E26)
+        "light" -> Color(0xFFFFFFFF)
+        else -> Color(0xFF3B3B46)
+    }
+
     Scaffold(
         containerColor = palette.bg,
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
@@ -94,7 +102,11 @@ fun ActorManagementScreen(
                             onClick = { showSortMenu = true },
                             modifier = Modifier.testTag("sort_actors_button")
                         ) {
-                            Icon(Icons.Default.SwapVert, contentDescription = "Sort", tint = palette.textPrimary)
+                            Icon(
+                                painter = painterResource(R.drawable.ic_funnel_solid),
+                                contentDescription = "Sort",
+                                tint = palette.textPrimary
+                            )
                         }
 
                         DropdownMenu(
@@ -197,7 +209,7 @@ fun ActorManagementScreen(
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(8.dp),
+                                .padding(vertical = 16.dp, horizontal = 8.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             val isBetaTest = LocalBetaTestPrivacy.current
@@ -288,11 +300,12 @@ fun ActorManagementScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(14.dp))
-                                .border(1.dp, palette.border, RoundedCornerShape(14.dp))
                                 .clickable {
                                     viewModel.navigateTo(ScreenState.ActorScenes(actor.id))
                                 },
-                            colors = CardDefaults.cardColors(containerColor = palette.cardBg)
+                            colors = CardDefaults.cardColors(containerColor = prominentCardBg),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                            border = null
                         ) {
                             itemContent()
                         }

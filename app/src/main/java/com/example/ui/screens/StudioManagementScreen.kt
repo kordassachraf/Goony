@@ -30,6 +30,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.text.style.TextOverflow
 import coil.compose.AsyncImage
+import androidx.compose.ui.res.painterResource
+import com.example.R
 import com.example.data.local.entity.StudioEntity
 import com.example.ui.MainViewModel
 import com.example.ui.ScreenState
@@ -67,6 +69,12 @@ fun StudioManagementScreen(
         }
     }
 
+    val prominentCardBg = when (palette.name.lowercase()) {
+        "amoled" -> Color(0xFF1E1E26)
+        "light" -> Color(0xFFFFFFFF)
+        else -> Color(0xFF3B3B46)
+    }
+
     Scaffold(
         containerColor = palette.bg,
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
@@ -84,7 +92,11 @@ fun StudioManagementScreen(
                             onClick = { showSortMenu = true },
                             modifier = Modifier.testTag("sort_studios_button")
                         ) {
-                            Icon(Icons.Default.SwapVert, contentDescription = "Sort", tint = palette.textPrimary)
+                            Icon(
+                                painter = painterResource(R.drawable.ic_funnel_solid),
+                                contentDescription = "Sort",
+                                tint = palette.textPrimary
+                            )
                         }
 
                         DropdownMenu(
@@ -161,7 +173,12 @@ fun StudioManagementScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Icon(Icons.Default.Business, contentDescription = null, tint = palette.textMuted, modifier = Modifier.size(54.dp))
+                    Icon(
+                        painter = painterResource(R.drawable.ic_video_camera),
+                        contentDescription = null,
+                        tint = palette.textMuted,
+                        modifier = Modifier.size(54.dp)
+                    )
                     Text("No studios in vault", color = palette.textPrimary, fontWeight = FontWeight.Bold)
                     Button(onClick = { showAddDialog = true }) {
                         Text("Add Studio")
@@ -187,7 +204,7 @@ fun StudioManagementScreen(
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(8.dp),
+                                .padding(vertical = 16.dp, horizontal = 8.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             val isBetaTest = LocalBetaTestPrivacy.current
@@ -248,7 +265,7 @@ fun StudioManagementScreen(
                                     }
                                 } else {
                                     Icon(
-                                        Icons.Default.Business,
+                                        painter = painterResource(R.drawable.ic_video_camera),
                                         contentDescription = null,
                                         tint = palette.textMuted,
                                         modifier = Modifier.size(36.dp)
@@ -280,11 +297,12 @@ fun StudioManagementScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(14.dp))
-                                .border(1.dp, palette.border, RoundedCornerShape(14.dp))
                                 .clickable {
                                     viewModel.navigateTo(ScreenState.StudioScenes(studio.id))
                                 },
-                            colors = CardDefaults.cardColors(containerColor = palette.cardBg)
+                            colors = CardDefaults.cardColors(containerColor = prominentCardBg),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                            border = null
                         ) {
                             itemContent()
                         }
@@ -361,7 +379,7 @@ fun StudioManagementScreen(
                             } else {
                                 Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
                                     Icon(
-                                        imageVector = Icons.Default.MovieCreation,
+                                        painter = painterResource(R.drawable.ic_video_camera),
                                         contentDescription = null,
                                         tint = palette.textMuted,
                                         modifier = Modifier.size(30.dp)

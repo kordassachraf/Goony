@@ -118,7 +118,7 @@ fun MainAppShell(viewModel: MainViewModel) {
                     NavigationDrawerItem(
                         icon = {
                             Icon(
-                                imageVector = if (isHomeSelected) Icons.Filled.Home else Icons.Outlined.Home,
+                                painter = painterResource(R.drawable.ic_home_solid),
                                 contentDescription = "Home",
                                 modifier = Modifier.size(22.dp)
                             )
@@ -170,7 +170,7 @@ fun MainAppShell(viewModel: MainViewModel) {
                     NavigationDrawerItem(
                         icon = {
                             Icon(
-                                imageVector = if (isActorsSelected) Icons.Filled.RecentActors else Icons.Outlined.RecentActors,
+                                painter = painterResource(R.drawable.ic_actor_placeholder),
                                 contentDescription = "Actors",
                                 modifier = Modifier.size(22.dp)
                             )
@@ -196,7 +196,7 @@ fun MainAppShell(viewModel: MainViewModel) {
                     NavigationDrawerItem(
                         icon = {
                             Icon(
-                                imageVector = if (isStudiosSelected) Icons.Filled.MovieCreation else Icons.Outlined.MovieCreation,
+                                painter = painterResource(R.drawable.ic_video_camera),
                                 contentDescription = "Studios",
                                 modifier = Modifier.size(22.dp)
                             )
@@ -252,7 +252,7 @@ fun MainAppShell(viewModel: MainViewModel) {
                     NavigationDrawerItem(
                         icon = {
                             Icon(
-                                imageVector = if (isSettingsSelected) Icons.Filled.Settings else Icons.Outlined.Settings,
+                                painter = painterResource(R.drawable.ic_settings_solid),
                                 contentDescription = "Settings & Sync",
                                 modifier = Modifier.size(22.dp)
                             )

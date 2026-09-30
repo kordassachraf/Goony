@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 
 val LocalVaultPalette = compositionLocalOf<VaultThemePalette> { VaultThemePalette.Dark }
 val LocalAccentColor = compositionLocalOf { Color(0xFF7C4DFF) }
+val LocalActressNameColor = compositionLocalOf { Color(0xFF2F80ED) }
 val LocalBetaTestPrivacy = compositionLocalOf { false }
 
 fun Modifier.privacyImageBlur(enabled: Boolean, radius: Dp = 80.dp): Modifier {
@@ -50,6 +51,7 @@ fun parseHexColor(hex: String, fallback: Color = Color(0xFF7C4DFF)): Color {
 fun GVJVaultTheme(
     paletteName: String = "Dark",
     accentColorHex: String = MaterialYouColorPresets.SYSTEM_DYNAMIC_ID,
+    actressNameColorHex: String = "#2F80ED",
     betaTestPrivacy: Boolean = false,
     content: @Composable () -> Unit
 ) {
@@ -137,10 +139,12 @@ fun GVJVaultTheme(
     )
 
     val activeAccent = colorScheme.primary
+    val activeActressColor = parseHexColor(actressNameColorHex, Color(0xFF2F80ED))
 
     CompositionLocalProvider(
         LocalVaultPalette provides animatedPalette,
         LocalAccentColor provides activeAccent,
+        LocalActressNameColor provides activeActressColor,
         LocalBetaTestPrivacy provides betaTestPrivacy
     ) {
         MaterialTheme(
