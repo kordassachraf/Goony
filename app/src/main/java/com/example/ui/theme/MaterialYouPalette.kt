@@ -328,6 +328,6 @@ object MaterialYouColorPresets {
 
     fun getPreset(idOrHex: String): MaterialThemePalette {
         return Presets.find { it.id.equals(idOrHex, ignoreCase = true) || it.seedHex.equals(idOrHex, ignoreCase = true) }
-            ?: Presets[1] // Default Catppuccin Mocha
+            ?: Presets.find { it.id == "tokyo_night" } ?: Presets[0]
     }
 }

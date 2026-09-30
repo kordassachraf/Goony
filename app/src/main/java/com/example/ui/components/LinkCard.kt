@@ -127,8 +127,8 @@ fun LinkCard(
 
     val menuProgress by animateFloatAsState(
         targetValue = if (isOverlayActive) 1f else 0f,
-        animationSpec = if (isOverlayActive) spring(dampingRatio = 0.65f, stiffness = Spring.StiffnessMediumLow)
-                        else tween(150, easing = FastOutLinearInEasing),
+        animationSpec = if (isOverlayActive) spring(dampingRatio = 0.85f, stiffness = Spring.StiffnessLow)
+                        else tween(320, easing = FastOutSlowInEasing),
         label = "menu_progress"
     )
 
@@ -188,7 +188,7 @@ fun LinkCard(
 
     val imageBlur by animateDpAsState(
         targetValue = if (isOverlayActive) 8.dp else 0.dp,
-        animationSpec = tween(durationMillis = 150, easing = FastOutSlowInEasing),
+        animationSpec = tween(durationMillis = 380, easing = FastOutSlowInEasing),
         label = "cover_blur"
     )
 
@@ -263,15 +263,10 @@ fun LinkCard(
     // Native Smooth Cover Reveal Animation State
     var isImageLoaded by remember(link.coverImage) { mutableStateOf(false) }
 
-    val coverAlpha by animateFloatAsState(
-        targetValue = if (isImageLoaded) 1f else 0f,
-        animationSpec = tween(durationMillis = 320, easing = FastOutSlowInEasing),
-        label = "cover_reveal_alpha"
-    )
     val coverScale by animateFloatAsState(
-        targetValue = if (isOverlayActive) 1.15f else 1.0f,
+        targetValue = if (isOverlayActive) 1.10f else 1.0f,
         animationSpec = tween(
-            durationMillis = 420,
+            durationMillis = 480,
             easing = FastOutSlowInEasing
         ),
         label = "cover_scale"
@@ -346,8 +341,7 @@ fun LinkCard(
                     AsyncImage(
                         model = ImageRequest.Builder(context)
                             .data(link.coverImage)
-                            .crossfade(true)
-                            .crossfade(280)
+                            .crossfade(180)
                             .build(),
                         contentDescription = link.title,
                         contentScale = ContentScale.Crop,
@@ -357,7 +351,6 @@ fun LinkCard(
                             .fillMaxSize()
                             .privacyImageBlur(isBetaTest)
                             .graphicsLayer {
-                                alpha = coverAlpha
                                 scaleX = coverScale
                                 scaleY = coverScale
                             }
@@ -384,10 +377,10 @@ fun LinkCard(
                 }
             }
 
-            // Smooth Scrim Layer with simple fade in/out
+            // Smooth Scrim Layer with gentle fade in/out
             val scrimAlpha by animateFloatAsState(
                 targetValue = if (isOverlayActive) 1f else 0f,
-                animationSpec = tween(durationMillis = 150),
+                animationSpec = tween(durationMillis = 340, easing = FastOutSlowInEasing),
                 label = "scrim_alpha"
             )
 
@@ -407,7 +400,7 @@ fun LinkCard(
                 )
             }
 
-            // Smooth Native Zoom & Enhanced Bouncy Pop-up transition (Interruption-safe overlay)
+            // Smooth Native Zoom & Soft Pop-up transition (Interruption-safe overlay)
             if (isOverlayVisible) {
                 CompositionLocalProvider(LocalActionsInteractive provides isOverlayActive) {
                     Box(
@@ -417,7 +410,7 @@ fun LinkCard(
                             .graphicsLayer {
                                 val p = menuProgress
                                 alpha = (p * 1.5f).coerceIn(0f, 1f)
-                                val s = lerp(0.65f, 1f, p)
+                                val s = lerp(0.75f, 1f, p)
                                 scaleX = s
                                 scaleY = s
                             }
@@ -427,27 +420,27 @@ fun LinkCard(
                         AnimatedContent(
                             targetState = if (isOverlayActive) currentMenuState else lastOpenMenuState,
                             transitionSpec = {
-                                (fadeIn(animationSpec = tween(220, easing = LinearOutSlowInEasing)) +
+                                (fadeIn(animationSpec = tween(320, easing = LinearOutSlowInEasing)) +
                                         scaleIn(
-                                            initialScale = 0.65f,
+                                            initialScale = 0.82f,
                                             animationSpec = spring(
-                                                dampingRatio = 0.65f,
-                                                stiffness = Spring.StiffnessMediumLow
+                                                dampingRatio = 0.82f,
+                                                stiffness = Spring.StiffnessLow
                                             )
                                         ))
                                     .togetherWith(
-                                        fadeOut(animationSpec = tween(150, easing = FastOutLinearInEasing)) +
+                                        fadeOut(animationSpec = tween(220, easing = FastOutLinearInEasing)) +
                                                 scaleOut(
-                                                    targetScale = 0.85f,
+                                                    targetScale = 0.90f,
                                                     animationSpec = spring(
-                                                        dampingRatio = 0.65f,
-                                                        stiffness = Spring.StiffnessMediumLow
+                                                        dampingRatio = 0.82f,
+                                                        stiffness = Spring.StiffnessLow
                                                     )
                                                 )
                                     )
                                     .using(
                                         SizeTransform(clip = false) { _, _ ->
-                                            tween(durationMillis = 180, easing = FastOutSlowInEasing)
+                                            tween(durationMillis = 280, easing = FastOutSlowInEasing)
                                         }
                                     )
                             },
@@ -606,7 +599,7 @@ fun LinkCard(
             // Inline Resolution & Progress Overlay (replaces popup dialog)
             // Cover turns into theme background (Dark / Amoled / Light) with real-time status steps
             // ========================================================
-            if (isResolvingThisCard && resolvingStatus != null) {
+            if (isResolvingThisCard && resolvingStatus != null && inlinePlayback == null) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -641,7 +634,7 @@ fun LinkCard(
                         )
                     }
                 }
-            } else if (isResolvingThisCard && resolutionError != null) {
+            } else if (isResolvingThisCard && resolutionError != null && inlinePlayback == null) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()

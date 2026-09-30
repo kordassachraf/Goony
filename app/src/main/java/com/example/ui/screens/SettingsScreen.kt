@@ -686,241 +686,6 @@ private fun SettingsDisplaySection(
             }
         }
 
-        // Screen Transition Animation Switcher
-        Card(
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(14.dp)
-            ) {
-                Text(
-                    "Transition Animation",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold
-                    ),
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-
-                // Row 1: Motion & Native
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    // Option 0: Dynamic Motion (Current)
-                    val isOption0Selected = transitionStyle == 0
-                    Surface(
-                        onClick = { onTransitionStyleChange(0) },
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(14.dp),
-                        color = if (isOption0Selected) accent.copy(alpha = 0.15f) else palette.cardBg,
-                        border = androidx.compose.foundation.BorderStroke(
-                            width = if (isOption0Selected) 2.dp else 1.dp,
-                            color = if (isOption0Selected) accent else palette.border
-                        )
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(12.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Animation,
-                                contentDescription = null,
-                                tint = if (isOption0Selected) accent else palette.textSecondary,
-                                modifier = Modifier.size(22.dp)
-                            )
-                            Text(
-                                text = "Dynamic Motion",
-                                fontSize = 12.5.sp,
-                                fontWeight = if (isOption0Selected) FontWeight.Bold else FontWeight.Medium,
-                                color = if (isOption0Selected) accent else palette.textPrimary,
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                            )
-                            Text(
-                                text = "Vertical Slide",
-                                fontSize = 10.sp,
-                                color = palette.textMuted,
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                            )
-                        }
-                    }
-
-                    // Option 1: Native Simple & Smooth
-                    val isOption1Selected = transitionStyle == 1
-                    Surface(
-                        onClick = { onTransitionStyleChange(1) },
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(14.dp),
-                        color = if (isOption1Selected) accent.copy(alpha = 0.15f) else palette.cardBg,
-                        border = androidx.compose.foundation.BorderStroke(
-                            width = if (isOption1Selected) 2.dp else 1.dp,
-                            color = if (isOption1Selected) accent else palette.border
-                        )
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(12.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.AutoAwesome,
-                                contentDescription = null,
-                                tint = if (isOption1Selected) accent else palette.textSecondary,
-                                modifier = Modifier.size(22.dp)
-                            )
-                            Text(
-                                text = "Native Simple",
-                                fontSize = 12.5.sp,
-                                fontWeight = if (isOption1Selected) FontWeight.Bold else FontWeight.Medium,
-                                color = if (isOption1Selected) accent else palette.textPrimary,
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                            )
-                            Text(
-                                text = "Scale & Fade",
-                                fontSize = 10.sp,
-                                color = palette.textMuted,
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                            )
-                        }
-                    }
-                }
-
-                // Row 2: Ultra Light Crossfade & Instant Off
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    // Option 2: Ultra Light Crossfade
-                    val isOption2Selected = transitionStyle == 2
-                    Surface(
-                        onClick = { onTransitionStyleChange(2) },
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(14.dp),
-                        color = if (isOption2Selected) accent.copy(alpha = 0.15f) else palette.cardBg,
-                        border = androidx.compose.foundation.BorderStroke(
-                            width = if (isOption2Selected) 2.dp else 1.dp,
-                            color = if (isOption2Selected) accent else palette.border
-                        )
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(12.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.FlashOn,
-                                contentDescription = null,
-                                tint = if (isOption2Selected) accent else palette.textSecondary,
-                                modifier = Modifier.size(22.dp)
-                            )
-                            Text(
-                                text = "Ultra Crossfade",
-                                fontSize = 12.5.sp,
-                                fontWeight = if (isOption2Selected) FontWeight.Bold else FontWeight.Medium,
-                                color = if (isOption2Selected) accent else palette.textPrimary,
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                            )
-                            Text(
-                                text = "Pure Fade 90ms",
-                                fontSize = 10.sp,
-                                color = palette.textMuted,
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                            )
-                        }
-                    }
-
-                    // Option 3: Instant Off (None)
-                    val isOption3Selected = transitionStyle == 3
-                    Surface(
-                        onClick = { onTransitionStyleChange(3) },
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(14.dp),
-                        color = if (isOption3Selected) accent.copy(alpha = 0.15f) else palette.cardBg,
-                        border = androidx.compose.foundation.BorderStroke(
-                            width = if (isOption3Selected) 2.dp else 1.dp,
-                            color = if (isOption3Selected) accent else palette.border
-                        )
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(12.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Speed,
-                                contentDescription = null,
-                                tint = if (isOption3Selected) accent else palette.textSecondary,
-                                modifier = Modifier.size(22.dp)
-                            )
-                            Text(
-                                text = "Instant (Off)",
-                                fontSize = 12.5.sp,
-                                fontWeight = if (isOption3Selected) FontWeight.Bold else FontWeight.Medium,
-                                color = if (isOption3Selected) accent else palette.textPrimary,
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                            )
-                            Text(
-                                text = "No Motion 0ms",
-                                fontSize = 10.sp,
-                                color = palette.textMuted,
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                            )
-                        }
-                    }
-                }
-
-                // Row 3: Vertical Slide v2
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    // Option 4: Vertical Slide v2
-                    val isOption4Selected = transitionStyle == 4
-                    Surface(
-                        onClick = { onTransitionStyleChange(4) },
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(14.dp),
-                        color = if (isOption4Selected) accent.copy(alpha = 0.15f) else palette.cardBg,
-                        border = androidx.compose.foundation.BorderStroke(
-                            width = if (isOption4Selected) 2.dp else 1.dp,
-                            color = if (isOption4Selected) accent else palette.border
-                        )
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(12.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.SwapVert,
-                                contentDescription = null,
-                                tint = if (isOption4Selected) accent else palette.textSecondary,
-                                modifier = Modifier.size(22.dp)
-                            )
-                            Text(
-                                text = "Vertical Slide v2",
-                                fontSize = 12.5.sp,
-                                fontWeight = if (isOption4Selected) FontWeight.Bold else FontWeight.Medium,
-                                color = if (isOption4Selected) accent else palette.textPrimary,
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                            )
-                            Text(
-                                text = "Fade-Through Slide",
-                                fontSize = 10.sp,
-                                color = palette.textMuted,
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.weight(1f))
-                }
-            }
-        }
-
         // Cards layout toggle for Actors and Studios management
         Card(
             shape = RoundedCornerShape(20.dp),
@@ -1045,11 +810,12 @@ private fun IconStylePicker(
     val context = androidx.compose.ui.platform.LocalContext.current
     val accent = LocalAccentColor.current
     val options = listOf(
-        Triple("Default", Color(0xFF58595e), Color.White),
-        Triple("Blue", Color(0xFF3B82F6), Color.White),
-        Triple("Orange", Color(0xFFD97706), Color.White),
-        Triple("Dark", Color(0xFF1F2937), Color.White),
-        Triple("Inverted", Color(0xFFF3F4F6), Color.Black)
+        // (realIndex, label, bgColor, fgColor)
+        IconOptionData(4, "Inverted", Color(0xFFF3F4F6), Color.Black),
+        IconOptionData(0, "Default", Color(0xFF58595e), Color.White),
+        IconOptionData(1, "Blue", Color(0xFF3B82F6), Color.White),
+        IconOptionData(2, "Orange", Color(0xFFD97706), Color.White),
+        IconOptionData(3, "Dark", Color(0xFF1F2937), Color.White)
     )
 
     Column(
@@ -1070,8 +836,8 @@ private fun IconStylePicker(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            options.forEachIndexed { index, (label, bgColor, fgColor) ->
-                val isSelected = selectedIndex == index
+            options.forEach { item ->
+                val isSelected = selectedIndex == item.realIndex
 
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -1091,8 +857,8 @@ private fun IconStylePicker(
                                 shape = CircleShape
                             )
                             .clickable {
-                                onSelectIconStyle(index)
-                                switchAppIcon(context, index)
+                                onSelectIconStyle(item.realIndex)
+                                switchAppIcon(context, item.realIndex)
                             },
                         contentAlignment = Alignment.Center
                     ) {
@@ -1100,19 +866,19 @@ private fun IconStylePicker(
                             modifier = Modifier
                                 .size(44.dp)
                                 .clip(CircleShape)
-                                .background(bgColor),
+                                .background(item.bgColor),
                             contentAlignment = Alignment.Center
                         ) {
                             Box(
                                 modifier = Modifier
                                     .size(18.dp)
-                                    .background(fgColor, CircleShape)
+                                    .background(item.fgColor, CircleShape)
                             )
                         }
                     }
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
-                        text = label,
+                        text = item.label,
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                             fontSize = 11.sp
@@ -1124,6 +890,8 @@ private fun IconStylePicker(
         }
     }
 }
+
+private data class IconOptionData(val realIndex: Int, val label: String, val bgColor: Color, val fgColor: Color)
 
 @Composable
 private fun SettingsSampleDataSection(

@@ -1,8 +1,6 @@
 package com.example.network
 
 import android.util.Log
-import com.example.data.local.entity.CoomerPostData
-import com.example.data.local.entity.HanimeEpisodeData
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -15,22 +13,6 @@ data class ScrapedGalleryResult(
     val title: String,
     val coverImage: String?,
     val images: List<String>
-)
-
-data class ScrapedHanimeResult(
-    val title: String,
-    val coverImage: String,
-    val description: String,
-    val censorship: String,
-    val episodes: List<HanimeEpisodeData>,
-    val secondaryCovers: List<String>
-)
-
-data class ScrapedCreatorResult(
-    val name: String,
-    val avatarUrl: String,
-    val posts: List<CoomerPostData>,
-    val service: String
 )
 
 data class ScrapedTorrent(
@@ -84,121 +66,7 @@ object MediaScrapers {
         }
     }
 
-    // 2. Coomer / OnlyFans / Fansly Creator Scraper
-    suspend fun scrapeCreatorProfile(profileUrl: String): ScrapedCreatorResult {
-        var name = "Creator"
-        var avatarUrl = ""
-        val posts = mutableListOf<CoomerPostData>()
-        var service = "OnlyFans"
-
-        try {
-            // e.g. https://coomer.su/onlyfans/user/username
-            val match = Pattern.compile("coomer\\.su/([a-zA-Z0-9]+)/user/([a-zA-Z0-9_.-]+)").matcher(profileUrl)
-            val detectedService = if (match.find()) match.group(1) ?: "onlyfans" else "onlyfans"
-            val detectedUser = if (match.groupCount() >= 2) match.group(2) ?: "" else ""
-            service = detectedService.replaceFirstChar { it.uppercase() }
-            name = detectedUser.ifEmpty { "Creator" }
-
-            val html = NetworkClient.getHtml(profileUrl)
-            val doc = Jsoup.parse(html)
-
-            val avatarEl = doc.select(".user-header__avatar img, .fancy-image__image").firstOrNull()
-            if (avatarEl != null) {
-                avatarUrl = avatarEl.attr("src")
-                if (avatarUrl.startsWith("//")) avatarUrl = "https:$avatarUrl"
-            }
-
-            val postElements = doc.select("article.post-card")
-            for ((idx, el) in postElements.withIndex()) {
-                val postId = el.attr("data-id").ifEmpty { "post_$idx" }
-                val caption = el.select(".post-card__header").text()
-                val mediaLinks = el.select("a.post-card__image-link, a.fileThumb")
-                val urls = mutableListOf<String>()
-                val thumbs = mutableListOf<String>()
-                val mediaTypes = mutableListOf<String>()
-
-                for (link in mediaLinks) {
-                    val href = link.attr("href")
-                    val thumb = link.select("img").attr("src")
-                    if (href.isNotEmpty()) {
-                        val fullMedia = if (href.startsWith("//")) "https:$href" else href
-                        urls.add(fullMedia)
-                        thumbs.add(if (thumb.startsWith("//")) "https:$thumb" else thumb)
-                        mediaTypes.add(if (href.endsWith(".mp4") || href.endsWith(".m4v")) "video" else "image")
-                    }
-                }
-
-                if (urls.isNotEmpty()) {
-                    posts.add(
-                        CoomerPostData(
-                            id = postId,
-                            urls = urls,
-                            thumbUrls = thumbs,
-                            caption = caption.ifEmpty { null },
-                            mediaTypes = mediaTypes,
-                            sourceService = service
-                        )
-                    )
-                }
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "scrapeCreatorProfile error", e)
-        }
-
-        return ScrapedCreatorResult(name = name, avatarUrl = avatarUrl, posts = posts, service = service)
-    }
-
-    // 3. Hanime Series Scraper
-    suspend fun scrapeHanimeSeries(url: String): ScrapedHanimeResult {
-        var title = "Hanime Series"
-        var cover = ""
-        var desc = ""
-        var censorship = "UNCENSORED"
-        val episodes = mutableListOf<HanimeEpisodeData>()
-        val secondaryCovers = mutableListOf<String>()
-
-        try {
-            val html = NetworkClient.getHtml(url)
-            val doc = Jsoup.parse(html)
-            title = doc.select("h1").text().ifEmpty { "Hanime Series" }
-            desc = doc.select(".description, .synopsis, p").firstOrNull()?.text() ?: ""
-            val coverEl = doc.select("img.cover, .poster img").firstOrNull()
-            if (coverEl != null) {
-                cover = coverEl.attr("src")
-            }
-
-            val epLinks = doc.select("a[href*=/watch/]")
-            for ((idx, ep) in epLinks.withIndex()) {
-                val epUrl = ep.attr("href")
-                val epTitle = ep.text().ifEmpty { "Episode ${idx + 1}" }
-                val epThumb = ep.select("img").attr("src")
-                val fullUrl = if (epUrl.startsWith("http")) epUrl else "https://hstream.moe$epUrl"
-
-                episodes.add(
-                    HanimeEpisodeData(
-                        id = "ep_${idx + 1}",
-                        url = fullUrl,
-                        coverImage = epThumb.ifEmpty { cover },
-                        episodeNumber = idx + 1,
-                        title = epTitle
-                    )
-                )
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "scrapeHanimeSeries error", e)
-        }
-
-        return ScrapedHanimeResult(
-            title = title,
-            coverImage = cover,
-            description = desc,
-            censorship = censorship,
-            episodes = episodes,
-            secondaryCovers = secondaryCovers
-        )
-    }
-
-    // 4. Sukebei / Torrent Scraper
+    // 2. Sukebei / Torrent Scraper
     suspend fun scrapeSukebei(query: String): List<ScrapedTorrent> {
         val list = mutableListOf<ScrapedTorrent>()
         try {

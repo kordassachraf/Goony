@@ -1,5 +1,8 @@
 package com.example.ui.screens
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -15,10 +18,12 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -30,6 +35,7 @@ import coil.compose.AsyncImage
 import com.example.data.local.entity.ActorEntity
 import com.example.ui.MainViewModel
 import com.example.ui.ScreenState
+import com.example.ui.components.ActorAvatarPlaceholder
 import com.example.ui.theme.LocalAccentColor
 import com.example.ui.theme.LocalBetaTestPrivacy
 import com.example.ui.theme.LocalVaultPalette
@@ -196,6 +202,22 @@ fun ActorManagementScreen(
                         ) {
                             val isBetaTest = LocalBetaTestPrivacy.current
 
+                            var circleVisible by remember { mutableStateOf(false) }
+                            val circleAlpha by animateFloatAsState(
+                                targetValue = if (circleVisible) 1f else 0f,
+                                animationSpec = tween(320, easing = FastOutSlowInEasing),
+                                label = "actor_circle_alpha"
+                            )
+                            val circleScale by animateFloatAsState(
+                                targetValue = if (circleVisible) 1f else 0.88f,
+                                animationSpec = tween(320, easing = FastOutSlowInEasing),
+                                label = "actor_circle_scale"
+                            )
+
+                            LaunchedEffect(Unit) {
+                                circleVisible = true
+                            }
+
                             Surface(
                                 shape = CircleShape,
                                 color = palette.surface,
@@ -203,6 +225,11 @@ fun ActorManagementScreen(
                                 modifier = Modifier
                                     .size(72.dp)
                                     .clip(CircleShape)
+                                    .graphicsLayer {
+                                        alpha = circleAlpha
+                                        scaleX = circleScale
+                                        scaleY = circleScale
+                                    }
                                     .border(2.dp, if (showCards) Color.White else accent.copy(alpha = 0.6f), CircleShape)
                             ) {
                                 if (actor.imageUrl.isNotEmpty()) {
@@ -210,9 +237,20 @@ fun ActorManagementScreen(
                                         model = actor.imageUrl,
                                         contentDescription = actor.name,
                                         contentScale = ContentScale.Crop,
+                                        alignment = BiasAlignment(
+                                            horizontalBias = (actor.imagePositionX - 50f) / 50f,
+                                            verticalBias = (actor.imagePositionY - 50f) / 50f
+                                        ),
                                         modifier = Modifier
                                             .fillMaxSize()
+                                            .clip(CircleShape)
                                             .privacyImageBlur(isBetaTest)
+                                            .graphicsLayer {
+                                                scaleX = actor.imageZoom
+                                                scaleY = actor.imageZoom
+                                                translationX = (actor.imagePositionX - 50f) * (actor.imageZoom - 1.0f) * (size.width / 100f)
+                                                translationY = (actor.imagePositionY - 50f) * (actor.imageZoom - 1.0f) * (size.height / 100f)
+                                            }
                                     )
                                     if (isBetaTest) {
                                         Box(
@@ -222,25 +260,7 @@ fun ActorManagementScreen(
                                         )
                                     }
                                 } else {
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .background(
-                                                Brush.verticalGradient(
-                                                    listOf(accent.copy(alpha = 0.25f), palette.cardBg)
-                                                )
-                                            ),
-                                        contentAlignment = Alignment.BottomCenter
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Person,
-                                            contentDescription = null,
-                                            tint = palette.textSecondary.copy(alpha = 0.9f),
-                                            modifier = Modifier
-                                                .fillMaxSize(0.85f)
-                                                .padding(bottom = 2.dp)
-                                        )
-                                    }
+                                    ActorAvatarPlaceholder()
                                 }
                             }
 
@@ -347,14 +367,7 @@ fun ActorManagementScreen(
                                     modifier = Modifier.fillMaxSize()
                                 )
                             } else {
-                                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                                    Icon(
-                                        imageVector = Icons.Default.Person,
-                                        contentDescription = null,
-                                        tint = palette.textMuted,
-                                        modifier = Modifier.size(30.dp)
-                                    )
-                                }
+                                ActorAvatarPlaceholder()
                             }
                         }
                         Column {
@@ -380,7 +393,10 @@ fun ActorManagementScreen(
                             val actor = ActorEntity(
                                 id = editing?.id ?: UUID.randomUUID().toString(),
                                 name = name.trim(),
-                                imageUrl = imageUrl.trim()
+                                imageUrl = imageUrl.trim(),
+                                imagePositionX = editing?.imagePositionX ?: 50f,
+                                imagePositionY = editing?.imagePositionY ?: 50f,
+                                imageZoom = editing?.imageZoom ?: 1.0f
                             )
                             viewModel.saveActor(actor)
                             showAddDialog = false

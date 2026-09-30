@@ -1,5 +1,8 @@
 package com.example.ui.screens
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -18,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -187,36 +191,68 @@ fun StudioManagementScreen(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             val isBetaTest = LocalBetaTestPrivacy.current
-
-                            if (!studio.logoUrl.isNullOrEmpty()) {
-                                AsyncImage(
-                                    model = studio.logoUrl,
-                                    contentDescription = studio.name,
-                                    contentScale = ContentScale.Crop,
-                                    modifier = Modifier
-                                        .size(70.dp)
-                                        .clip(CircleShape)
-                                        .border(2.dp, if (showCards) Color.White else accent.copy(alpha = 0.5f), CircleShape)
-                                        .privacyImageBlur(isBetaTest)
-                                )
-                                if (isBetaTest) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(70.dp)
-                                            .clip(CircleShape)
-                                            .background(Color.Black.copy(alpha = 0.75f))
-                                    )
+                            val bgColor = if (!studio.logoBgColor.isNullOrEmpty()) {
+                                try {
+                                    Color(android.graphics.Color.parseColor(studio.logoBgColor))
+                                } catch (e: Exception) {
+                                    palette.surface
                                 }
                             } else {
-                                Box(
-                                    modifier = Modifier
-                                        .size(70.dp)
-                                        .clip(CircleShape)
-                                        .background(palette.surface)
-                                        .border(2.dp, if (showCards) Color.White else accent.copy(alpha = 0.5f), CircleShape),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(Icons.Default.Business, contentDescription = null, tint = palette.textMuted, modifier = Modifier.size(36.dp))
+                                palette.surface
+                            }
+
+                            var circleVisible by remember { mutableStateOf(false) }
+                            val circleAlpha by animateFloatAsState(
+                                targetValue = if (circleVisible) 1f else 0f,
+                                animationSpec = tween(320, easing = FastOutSlowInEasing),
+                                label = "studio_circle_alpha"
+                            )
+                            val circleScale by animateFloatAsState(
+                                targetValue = if (circleVisible) 1f else 0.88f,
+                                animationSpec = tween(320, easing = FastOutSlowInEasing),
+                                label = "studio_circle_scale"
+                            )
+
+                            LaunchedEffect(Unit) {
+                                circleVisible = true
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .size(70.dp)
+                                    .clip(CircleShape)
+                                    .graphicsLayer {
+                                        alpha = circleAlpha
+                                        scaleX = circleScale
+                                        scaleY = circleScale
+                                    }
+                                    .background(bgColor)
+                                    .border(2.dp, if (showCards) Color.White else accent.copy(alpha = 0.5f), CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                if (!studio.logoUrl.isNullOrEmpty()) {
+                                    AsyncImage(
+                                        model = studio.logoUrl,
+                                        contentDescription = studio.name,
+                                        contentScale = ContentScale.Fit,
+                                        modifier = Modifier
+                                            .size(52.dp)
+                                            .privacyImageBlur(isBetaTest)
+                                    )
+                                    if (isBetaTest) {
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .background(Color.Black.copy(alpha = 0.75f))
+                                        )
+                                    }
+                                } else {
+                                    Icon(
+                                        Icons.Default.Business,
+                                        contentDescription = null,
+                                        tint = palette.textMuted,
+                                        modifier = Modifier.size(36.dp)
+                                    )
                                 }
                             }
 
@@ -356,7 +392,8 @@ fun StudioManagementScreen(
                             val studio = StudioEntity(
                                 id = editing?.id ?: UUID.randomUUID().toString(),
                                 name = name.trim(),
-                                logoUrl = logoUrl.trim().ifEmpty { null }
+                                logoUrl = logoUrl.trim().ifEmpty { null },
+                                logoBgColor = editing?.logoBgColor
                             )
                             viewModel.saveStudio(studio)
                             showAddDialog = false

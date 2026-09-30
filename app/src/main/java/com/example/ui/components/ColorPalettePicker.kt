@@ -80,36 +80,11 @@ fun ColorPalettePicker(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // 1. Leading Palette Icon button (for Dynamic Monet) with rounded squircle / circular design
-            val isDynamicSelected = selectedId.equals(MaterialYouColorPresets.SYSTEM_DYNAMIC_ID, ignoreCase = true) || selectedId.isBlank()
-
-            Box(
-                modifier = Modifier
-                    .size(54.dp)
-                    .clip(RoundedCornerShape(18.dp))
-                    .background(
-                        if (isDynamicSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
-                        else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
-                    )
-                    .border(
-                        width = if (isDynamicSelected) 2.5.dp else 1.dp,
-                        color = if (isDynamicSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
-                        shape = RoundedCornerShape(18.dp)
-                    )
-                    .clickable { onSelectPalette(MaterialYouColorPresets.SYSTEM_DYNAMIC_ID) },
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Palette,
-                    contentDescription = "Dynamic Palette",
-                    tint = if (isDynamicSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-
-            // 2. Presets: Circular swatches with Pure Circular Selection Ring (CircleShape)
+            // Presets: Circular swatches with Pure Circular Selection Ring (CircleShape)
+            // Filter out system_dynamic to remove the palette icon
             presets.filter { it.id != MaterialYouColorPresets.SYSTEM_DYNAMIC_ID }.forEach { palette ->
-                val isSelected = selectedId.equals(palette.id, ignoreCase = true)
+                val activeId = if (selectedId.isBlank() || selectedId.equals(MaterialYouColorPresets.SYSTEM_DYNAMIC_ID, ignoreCase = true)) "tokyo_night" else selectedId
+                val isSelected = activeId.equals(palette.id, ignoreCase = true)
 
                 // Outer circular container with circular border selection
                 Box(

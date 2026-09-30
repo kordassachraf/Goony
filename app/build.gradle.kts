@@ -98,7 +98,7 @@ dependencies {
   implementation(libs.androidx.room.ktx)
   implementation(libs.androidx.room.runtime)
   implementation(libs.androidx.palette.ktx)
-  implementation(libs.compose.icons.feather)
+  // implementation(libs.compose.icons.feather)
   implementation(libs.coil.compose)
   implementation(libs.coil.svg)
   implementation(libs.androidx.media3.exoplayer)

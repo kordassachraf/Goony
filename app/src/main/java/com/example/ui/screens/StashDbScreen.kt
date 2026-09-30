@@ -77,6 +77,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.example.ui.components.ActorAvatarPlaceholder
 import com.example.ui.components.ShimmerBrush
 import com.example.ui.components.SmoothProgressIndicator
 import com.example.data.local.entity.ActorEntity
@@ -102,7 +103,7 @@ import com.example.ui.StashSearchType
 @Composable
 fun StashDbScreen(
     viewModel: MainViewModel,
-    onOpenDrawer: () -> Unit,
+    onOpenDrawer: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val palette = LocalVaultPalette.current
@@ -404,12 +405,12 @@ fun StashDbScreen(
                                 }
                             } else {
                                 IconButton(
-                                    onClick = onOpenDrawer,
-                                    modifier = Modifier.testTag("drawer_button")
+                                    onClick = { viewModel.navigateTo(ScreenState.Home) },
+                                    modifier = Modifier.testTag("back_button")
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Default.Menu,
-                                        contentDescription = "Open Drawer",
+                                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                        contentDescription = "Back",
                                         tint = palette.textPrimary
                                     )
                                 }
@@ -745,20 +746,33 @@ fun StashDbScreen(
                     ) + fadeOut(animationSpec = tween(150))
                 ) {
                     if (isSearchingTarget) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            SmoothProgressIndicator(color = accent, modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Text(
-                                text = "Searching ${if (activeType == StashSearchType.ACTORS) "actors" else "studios"}...",
-                                color = palette.textSecondary,
-                                fontSize = 13.sp
-                            )
+                        val shimmerBrush = ShimmerBrush()
+                        Column(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .width(72.dp)
+                                        .height(11.dp)
+                                        .clip(RoundedCornerShape(4.dp))
+                                        .background(shimmerBrush)
+                                )
+                            }
+                            LazyRow(
+                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
+                                horizontalArrangement = Arrangement.spacedBy(14.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .horizontalFadeEdge(24.dp),
+                                userScrollEnabled = false
+                            ) {
+                                items(6) {
+                                    StashCircleSkeletonItem()
+                                }
+                            }
                         }
                     } else if (activeType == StashSearchType.ACTORS && performerResults.isNotEmpty()) {
                         Column(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
@@ -1049,12 +1063,7 @@ fun HorizontalActorCircleItem(
                 )
             }
         } else {
-            Icon(
-                imageVector = Icons.Default.Person,
-                contentDescription = null,
-                tint = palette.textMuted,
-                modifier = Modifier.size(28.dp)
-            )
+            ActorAvatarPlaceholder()
         }
     }
 }
@@ -1616,7 +1625,7 @@ private fun Modifier.horizontalFadeEdge(fadeWidth: Dp = 24.dp): Modifier = this.
 )
 
 /**
- * Skeleton placeholder card for loading scenes with 16:9 shimmer box and 3 shimmer text lines.
+ * Skeleton placeholder card for loading scenes matching StashGridPhotoCard 1:1.
  */
 @Composable
 private fun StashSceneCardSkeleton() {
@@ -1626,7 +1635,11 @@ private fun StashSceneCardSkeleton() {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp)),
+            .clip(RoundedCornerShape(16.dp))
+            .border(
+                BorderStroke(0.6.dp, palette.border.copy(alpha = 0.2f)),
+                RoundedCornerShape(16.dp)
+            ),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = palette.surface),
         border = null
@@ -1641,51 +1654,127 @@ private fun StashSceneCardSkeleton() {
                     .background(shimmerBrush)
             )
 
-            // Content with 3 shimmer text lines
+            // Content matching StashGridPhotoCard layout 1:1
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .background(
+                        color = palette.surface,
+                        shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp)
+                    )
                     .padding(horizontal = 10.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(5.dp)
             ) {
-                // Title line
+                // Title line (Bold 13sp equivalent)
                 Box(
                     modifier = Modifier
                         .fillMaxWidth(0.82f)
-                        .height(13.dp)
+                        .height(14.dp)
                         .clip(RoundedCornerShape(4.dp))
                         .background(shimmerBrush)
                 )
 
+                // Divider line below title
                 HorizontalDivider(
-                    color = palette.border.copy(alpha = 0.25f),
-                    thickness = 0.5.dp
+                    color = palette.border.copy(alpha = 0.35f),
+                    thickness = 0.5.dp,
+                    modifier = Modifier.padding(vertical = 1.dp)
                 )
 
-                // 3 metadata shimmer lines
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth(0.65f)
-                        .height(10.dp)
-                        .clip(RoundedCornerShape(3.dp))
-                        .background(shimmerBrush)
-                )
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth(0.5f)
-                        .height(10.dp)
-                        .clip(RoundedCornerShape(3.dp))
-                        .background(shimmerBrush)
-                )
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth(0.38f)
-                        .height(10.dp)
-                        .clip(RoundedCornerShape(3.dp))
-                        .background(shimmerBrush)
-                )
+                // Row 1: Person Outline Icon + Actors
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(13.dp)
+                            .clip(CircleShape)
+                            .background(shimmerBrush)
+                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(0.65f)
+                            .height(11.5.dp)
+                            .clip(RoundedCornerShape(3.dp))
+                            .background(shimmerBrush)
+                    )
+                }
+
+                // Row 2: Studio Videocam Icon + Studio Name
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(13.5.dp)
+                            .clip(RoundedCornerShape(3.dp))
+                            .background(shimmerBrush)
+                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(0.48f)
+                            .height(11.5.dp)
+                            .clip(RoundedCornerShape(3.dp))
+                            .background(shimmerBrush)
+                    )
+                }
+
+                // Row 3: Calendar Outline Icon + Date
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(13.dp)
+                            .clip(RoundedCornerShape(3.dp))
+                            .background(shimmerBrush)
+                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(0.35f)
+                            .height(11.5.dp)
+                            .clip(RoundedCornerShape(3.dp))
+                            .background(shimmerBrush)
+                    )
+                }
             }
         }
+    }
+}
+
+/**
+ * Skeleton placeholder item for loading actors or studios circle list.
+ */
+@Composable
+private fun StashCircleSkeletonItem() {
+    val shimmerBrush = ShimmerBrush()
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.width(76.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .padding(vertical = 4.dp)
+                .size(60.dp)
+                .clip(CircleShape)
+                .background(shimmerBrush)
+        )
+
+        Spacer(modifier = Modifier.height(5.dp))
+
+        Box(
+            modifier = Modifier
+                .width(52.dp)
+                .height(11.dp)
+                .clip(RoundedCornerShape(4.dp))
+                .background(shimmerBrush)
+        )
     }
 }
 

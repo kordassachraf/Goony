@@ -80,7 +80,7 @@ fun MainAppShell(viewModel: MainViewModel) {
 
     ModalNavigationDrawer(
         drawerState = drawerState,
-        gesturesEnabled = true,
+        gesturesEnabled = currentScreen is ScreenState.Home,
         scrimColor = Color.Black.copy(alpha = 0.5f),
         drawerContent = {
             ModalDrawerSheet(
@@ -218,58 +218,6 @@ fun MainAppShell(viewModel: MainViewModel) {
                         modifier = Modifier.padding(vertical = 2.dp)
                     )
 
-                    val isHanimeSelected = currentScreen is ScreenState.Hanime || currentScreen is ScreenState.HanimeDetail
-                    NavigationDrawerItem(
-                        icon = {
-                            Icon(
-                                imageVector = if (isHanimeSelected) Icons.Filled.Animation else Icons.Outlined.Animation,
-                                contentDescription = "Hanime",
-                                modifier = Modifier.size(22.dp)
-                            )
-                        },
-                        label = { Text("Hanime", fontWeight = if (isHanimeSelected) FontWeight.SemiBold else FontWeight.Normal) },
-                        selected = isHanimeSelected,
-                        onClick = {
-                            viewModel.navigateTo(ScreenState.Hanime)
-                            coroutineScope.launch { drawerState.close() }
-                        },
-                        colors = NavigationDrawerItemDefaults.colors(
-                            selectedContainerColor = accent.copy(alpha = 0.18f),
-                            selectedTextColor = accent,
-                            selectedIconColor = accent,
-                            unselectedTextColor = palette.textPrimary,
-                            unselectedIconColor = palette.textSecondary
-                        ),
-                        shape = CircleShape,
-                        modifier = Modifier.padding(vertical = 2.dp)
-                    )
-
-                    val isCoomersSelected = currentScreen is ScreenState.Coomers || currentScreen is ScreenState.CoomerDetail
-                    NavigationDrawerItem(
-                        icon = {
-                            Icon(
-                                imageVector = if (isCoomersSelected) Icons.Filled.Subscriptions else Icons.Outlined.Subscriptions,
-                                contentDescription = "OnlyHaven",
-                                modifier = Modifier.size(22.dp)
-                            )
-                        },
-                        label = { Text("OnlyHaven", fontWeight = if (isCoomersSelected) FontWeight.SemiBold else FontWeight.Normal) },
-                        selected = isCoomersSelected,
-                        onClick = {
-                            viewModel.navigateTo(ScreenState.Coomers)
-                            coroutineScope.launch { drawerState.close() }
-                        },
-                        colors = NavigationDrawerItemDefaults.colors(
-                            selectedContainerColor = accent.copy(alpha = 0.18f),
-                            selectedTextColor = accent,
-                            selectedIconColor = accent,
-                            unselectedTextColor = palette.textPrimary,
-                            unselectedIconColor = palette.textSecondary
-                        ),
-                        shape = CircleShape,
-                        modifier = Modifier.padding(vertical = 2.dp)
-                    )
-
                     val isStashDbSelected = currentScreen is ScreenState.StashDb
                     NavigationDrawerItem(
                         icon = {
@@ -354,46 +302,38 @@ fun MainAppShell(viewModel: MainViewModel) {
                                             .togetherWith(fadeOut(tween(80, easing = FastOutLinearInEasing)))
                                             .using(null)
                                     }
-                                    3 -> {
-                                        // Option 3: Instant Off (0ms)
-                                        EnterTransition.None togetherWith ExitTransition.None
-                                    }
-                                    2 -> {
-                                        // Option 2: Ultra Crossfade (Pure 90ms Fade)
-                                        fadeIn(animationSpec = tween(90)) togetherWith fadeOut(animationSpec = tween(80))
-                                    }
                                     1 -> {
-                                        // Option 1: Native Simple & Smooth (Fast Fade + Scale)
+                                        // Option 1: Fade-Through Slide
                                         if (navDirection == MainViewModel.NavigationDirection.BACK) {
-                                            (fadeIn(animationSpec = tween(160, easing = LinearOutSlowInEasing)) +
-                                                    scaleIn(initialScale = 0.97f, animationSpec = tween(180, easing = FastOutSlowInEasing)))
+                                            (fadeIn(animationSpec = tween(220, easing = LinearOutSlowInEasing)) +
+                                                    slideInHorizontally(animationSpec = tween(240, easing = FastOutSlowInEasing)) { width -> -width / 12 })
                                                 .togetherWith(
-                                                    fadeOut(animationSpec = tween(140)) +
-                                                            scaleOut(targetScale = 1.02f, animationSpec = tween(160))
+                                                    fadeOut(animationSpec = tween(180)) +
+                                                            slideOutHorizontally(animationSpec = tween(220)) { width -> width / 12 }
                                                 )
                                         } else {
-                                            (fadeIn(animationSpec = tween(180, easing = LinearOutSlowInEasing)) +
-                                                    scaleIn(initialScale = 0.97f, animationSpec = tween(200, easing = FastOutSlowInEasing)))
+                                            (fadeIn(animationSpec = tween(240, easing = LinearOutSlowInEasing)) +
+                                                    slideInHorizontally(animationSpec = tween(260, easing = FastOutSlowInEasing)) { width -> width / 12 })
                                                 .togetherWith(
-                                                    fadeOut(animationSpec = tween(140)) +
-                                                            scaleOut(targetScale = 1.02f, animationSpec = tween(160))
+                                                    fadeOut(animationSpec = tween(180)) +
+                                                            slideOutHorizontally(animationSpec = tween(220)) { width -> -width / 12 }
                                                 )
                                         }
                                     }
                                     else -> {
-                                        // Option 0: Dynamic Motion (Current vertical slide motion)
+                                        // Option 0: Vertical Slide v2
                                         if (navDirection == MainViewModel.NavigationDirection.BACK) {
-                                            (slideInVertically(animationSpec = tween(260, easing = FastOutSlowInEasing)) { fullHeight -> -fullHeight / 12 } +
+                                            (slideInVertically(animationSpec = tween(280, easing = FastOutSlowInEasing)) { fullHeight -> -fullHeight / 10 } +
                                                     fadeIn(animationSpec = tween(240)))
                                                 .togetherWith(
-                                                    slideOutVertically(animationSpec = tween(300, easing = FastOutSlowInEasing)) { fullHeight -> fullHeight / 5 } +
+                                                    slideOutVertically(animationSpec = tween(300, easing = FastOutSlowInEasing)) { fullHeight -> fullHeight / 4 } +
                                                             fadeOut(animationSpec = tween(240))
                                                 )
                                         } else {
-                                            (slideInVertically(animationSpec = tween(320, easing = FastOutSlowInEasing)) { fullHeight -> fullHeight / 5 } +
+                                            (slideInVertically(animationSpec = tween(320, easing = FastOutSlowInEasing)) { fullHeight -> fullHeight / 4 } +
                                                     fadeIn(animationSpec = tween(280)))
                                                 .togetherWith(
-                                                    slideOutVertically(animationSpec = tween(260, easing = FastOutSlowInEasing)) { fullHeight -> -fullHeight / 12 } +
+                                                    slideOutVertically(animationSpec = tween(280, easing = FastOutSlowInEasing)) { fullHeight -> -fullHeight / 10 } +
                                                             fadeOut(animationSpec = tween(220))
                                                 )
                                         }
@@ -424,12 +364,6 @@ fun MainAppShell(viewModel: MainViewModel) {
                                 viewModel = viewModel,
                                 onOpenDrawer = { coroutineScope.launch { drawerState.open() } }
                             )
-                            is ScreenState.Coomers -> CoomerManagementScreen(viewModel)
-                            is ScreenState.AddEditCoomer -> CoomerManagementScreen(viewModel)
-                            is ScreenState.CoomerDetail -> CoomerDetailScreen(viewModel, screen.coomerId)
-                            is ScreenState.Hanime -> HanimeManagementScreen(viewModel)
-                            is ScreenState.AddEditHanime -> HanimeManagementScreen(viewModel)
-                            is ScreenState.HanimeDetail -> HanimeDetailScreen(viewModel, screen.hanimeId)
                             is ScreenState.PhotosetViewer -> PhotosetViewerScreen(viewModel, screen.title, screen.images, screen.initialIndex)
                             is ScreenState.StashDb -> StashDbScreen(
                                 viewModel = viewModel,
